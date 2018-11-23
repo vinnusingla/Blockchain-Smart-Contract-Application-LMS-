@@ -17,12 +17,12 @@ var ssn ;
 format.extend(String.prototype, {})
 
 
-app.set('view engine', 'pug');
-app.set('views', './views');
 app.use(bodyParser.json()); 		// for parsing application/json
 app.use(bodyParser.urlencoded({ extended: true })); 	// for parsing application/xwww-
 app.use(express.static(__dirname));
 app.use(session({secret:'XASDASDA'}));
+app.set('view engine', 'ejs');
+app.set('views', './views');
 
 
 Web3.providers.HttpProvider.prototype.sendAsync = Web3.providers.HttpProvider.prototype.send;
@@ -256,6 +256,14 @@ app.post('/login',function(req,res){
 				ssn=req.session;
 				ssn.accountAddress = result[0].accountAddress;
 
+				var user = {
+					email: result[0].email,
+					acc: result[0].accountAddress,
+					name: result[0].name
+				}
+
+				return res.render("userHome.ejs",{user: user});
+
 				return res.status(400).send({
 					success: true
 				});
@@ -288,6 +296,7 @@ app.get('/logout',function(req,res){
 				err: err
 			})
 		}
+		req.session.destroy();
 		console.log('Logged out Account - ' + ssn.accountAddress);
 
 		return res.status(400).send({
@@ -582,6 +591,7 @@ app.post('/showLeave',function(req,res){
 
 app.get('/userExists',function(req,res){
 	ssn=req.session;
+
 	console.log(ssn);
 	if(ssn.accountAddress === undefined){
 		return res.status(400).send({
